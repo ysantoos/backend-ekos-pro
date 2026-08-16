@@ -40,7 +40,7 @@ public class GetActiveLoansHandler : IRequestHandler<GetActiveLoansQuery, LoanPa
             {
                 Id = l.Id,
                 BookId = l.BookId,
-                UserName = l.FullName,
+                FullName = l.FullName,
                 LoanDate = l.LoanDate,
                 ReturnDate = l.ReturnDate
             })

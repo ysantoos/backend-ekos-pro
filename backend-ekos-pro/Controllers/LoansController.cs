@@ -43,4 +43,31 @@ public class LoansController : ControllerBase
         var result = await _mediator.Send(query);
         return Ok(ApiResponse<IEnumerable<LoanDto>>.SuccessResponse(result, "Loan history loaded."));
     }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] Domain.Service.Features.Loans.Commands.CreateLoan.CreateLoanCommand command)
+    {
+        _logger.LogInformation("Create loan called for bookId={bookId} user={user}", command.BookId, command.FullName);
+
+        try
+        {
+            var result = await _mediator.Send(command);
+            return Ok(ApiResponse<LoanDetailDto>.SuccessResponse(result, "Loan registered successfully."));
+        }
+        catch (Domain.Service.Exceptions.ValidationException ex)
+        {
+            _logger.LogWarning(ex, "Validation error creating loan for bookId={bookId}", command.BookId);
+            return BadRequest(ApiResponse<object>.FailureResponse(ex.Message));
+        }
+        catch (Domain.Service.Exceptions.BusinessException ex)
+        {
+            _logger.LogWarning(ex, "Business error creating loan for bookId={bookId}", command.BookId);
+            return Conflict(ApiResponse<object>.FailureResponse(ex.Message));
+        }
+        catch (Domain.Service.Exceptions.NotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Book not found when creating loan: {bookId}", command.BookId);
+            return NotFound(ApiResponse<object>.FailureResponse(ex.Message));
+        }
+    }
 }

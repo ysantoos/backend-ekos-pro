@@ -10,7 +10,7 @@ public class LoanDto
 
     public string? BookAuthor { get; set; }
 
-    public string UserName { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
 
     public DateTime? LoanDate { get; set; }
 
