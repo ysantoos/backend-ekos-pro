@@ -6,7 +6,7 @@ using Infrastructure.Entity.Data;
 
 namespace Infrastructure.Entity.Features.Catalog.Handlers;
 
-public class GetCatalogBooksHandler : IRequestHandler<GetCatalogBooksQuery, IEnumerable<CatalogBookDto>>
+public class GetCatalogBooksHandler : IRequestHandler<GetCatalogBooksQuery, CatalogPageResponseDto>
 {
     private readonly ApplicationDbContext _db;
 
@@ -15,7 +15,7 @@ public class GetCatalogBooksHandler : IRequestHandler<GetCatalogBooksQuery, IEnu
         _db = db;
     }
 
-    public async Task<IEnumerable<CatalogBookDto>> Handle(GetCatalogBooksQuery request, CancellationToken cancellationToken)
+    public async Task<CatalogPageResponseDto> Handle(GetCatalogBooksQuery request, CancellationToken cancellationToken)
     {
         var query = _db.CatalogBooks.AsNoTracking().AsQueryable();
 
@@ -42,7 +42,18 @@ public class GetCatalogBooksHandler : IRequestHandler<GetCatalogBooksQuery, IEnu
             query = query.Where(b => b.PublicationYear == request.PublicationYear.Value);
         }
 
+        // Get total count before pagination
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // Apply pagination
+        var page = Math.Max(1, request.Page);
+        var pageSize = Math.Max(1, request.PageSize);
+        var skip = (page - 1) * pageSize;
+
         var books = await query
+            .OrderBy(b => b.Title)
+            .Skip(skip)
+            .Take(pageSize)
             .Select(b => new CatalogBookDto
             {
                 Id = b.Id,
@@ -61,7 +72,16 @@ public class GetCatalogBooksHandler : IRequestHandler<GetCatalogBooksQuery, IEnu
             .ToListAsync(cancellationToken);
 
         if (books.Count == 0)
-            return books;
+        {
+            return new CatalogPageResponseDto
+            {
+                Items = Array.Empty<CatalogBookDto>(),
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                HasMore = (skip + 0) < totalCount
+            };
+        }
 
         var loanedCounts = await _db.LoanHistoryEntries
             .AsNoTracking()
@@ -85,6 +105,15 @@ public class GetCatalogBooksHandler : IRequestHandler<GetCatalogBooksQuery, IEnu
             books = books.Where(b => (av == "available" && b.AvailableCopies > 0) || (av == "loaned" && b.AvailableCopies == 0)).ToList();
         }
 
-        return books;
+        var response = new CatalogPageResponseDto
+        {
+            Items = books,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            HasMore = (skip + books.Count) < totalCount
+        };
+
+        return response;
     }
 }

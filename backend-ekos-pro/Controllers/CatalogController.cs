@@ -19,7 +19,7 @@ public class CatalogController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] string? search, [FromQuery] string? category, [FromQuery] string? author, [FromQuery] int? publicationYear, [FromQuery] string? availability)
+    public async Task<IActionResult> Get([FromQuery] string? search, [FromQuery] string? category, [FromQuery] string? author, [FromQuery] int? publicationYear, [FromQuery] string? availability, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         _logger.LogInformation("Get catalog called with search={search} category={category} author={author} publicationYear={year} availability={availability}", search, category, author, publicationYear, availability);
 
@@ -29,12 +29,14 @@ public class CatalogController : ControllerBase
             Category = category,
             Author = author,
             PublicationYear = publicationYear,
-            Availability = availability
+            Availability = availability,
+            Page = page,
+            PageSize = pageSize
         };
 
         var result = await _mediator.Send(query);
 
-        var response = ApiResponse<IEnumerable<CatalogBookDto>>.SuccessResponse(result);
+        var response = ApiResponse<CatalogPageResponseDto>.SuccessResponse(result);
         return Ok(response);
     }
 }
