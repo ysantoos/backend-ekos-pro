@@ -7,12 +7,12 @@ namespace backend_ekos_pro.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CatalogController : ControllerBase
+public class BooksController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly ILogger<CatalogController> _logger;
+    private readonly ILogger<BooksController> _logger;
 
-    public CatalogController(IMediator mediator, ILogger<CatalogController> logger)
+    public BooksController(IMediator mediator, ILogger<BooksController> logger)
     {
         _mediator = mediator;
         _logger = logger;
@@ -38,6 +38,24 @@ public class CatalogController : ControllerBase
 
         var response = ApiResponse<CatalogPageResponseDto>.SuccessResponse(result);
         return Ok(response);
+    }
+
+    [HttpGet("{bookId:guid}")]
+    public async Task<IActionResult> GetById([FromRoute] Guid bookId)
+    {
+        _logger.LogInformation("Get book by id called: {bookId}", bookId);
+
+        try
+        {
+            var query = new Domain.Service.Features.Catalog.Queries.GetCatalogBookById.GetCatalogBookByIdQuery { Id = bookId };
+            var book = await _mediator.Send(query);
+            return Ok(ApiResponse<CatalogBookDto>.SuccessResponse(book, "Book found."));
+        }
+        catch (Domain.Service.Exceptions.NotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Book not found: {bookId}", bookId);
+            return NotFound(ApiResponse<object>.FailureResponse(ex.Message));
+        }
     }
 
     [HttpDelete("{id:guid}")]
