@@ -23,6 +23,7 @@ public class GetLoanHistoryByBookHandler : IRequestHandler<GetLoanHistoryByBookQ
             .AsNoTracking()
             .Where(l => l.BookId == bookIdStr)
             .OrderByDescending(l => l.LoanDate)
+            .Take(4)
             .Select(l => new LoanDto
             {
                 Id = l.Id,
