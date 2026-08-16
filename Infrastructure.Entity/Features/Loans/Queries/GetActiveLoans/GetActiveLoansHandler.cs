@@ -22,8 +22,16 @@ public class GetActiveLoansHandler : IRequestHandler<GetActiveLoansQuery, LoanPa
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
             var s = request.Search.Trim();
-            // LoanHistoryEntry stores user full name in FullName
-            query = query.Where(l => l.FullName.Contains(s) || l.BookId.Contains(s));
+
+            // Search by user full name or by book title (book title lives in CatalogBooks)
+            // First find matching book ids by title, then filter loans whose BookId is in that set
+            var matchingBookIds = await _db.CatalogBooks
+                .AsNoTracking()
+                .Where(b => b.Title.Contains(s))
+                .Select(b => b.Id.ToString())
+                .ToListAsync(cancellationToken);
+
+            query = query.Where(l => l.FullName.Contains(s) || matchingBookIds.Contains(l.BookId));
         }
 
         var total = await query.CountAsync(cancellationToken);
