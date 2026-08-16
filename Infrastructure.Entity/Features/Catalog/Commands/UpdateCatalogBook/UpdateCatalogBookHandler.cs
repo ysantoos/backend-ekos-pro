@@ -38,7 +38,6 @@ public class UpdateCatalogBookHandler : IRequestHandler<UpdateCatalogBookCommand
         entity.Description = request.Description;
         entity.PublicationYear = request.PublicationYear;
         entity.TotalCopies = request.TotalCopies;
-        entity.CoverColor = request.CoverColor;
 
         await _db.SaveChangesAsync(cancellationToken);
 

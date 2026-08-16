@@ -22,6 +22,4 @@ public class UpdateCatalogBookCommand : IRequest<CatalogBookDto>
     public int? PublicationYear { get; set; }
 
     public int TotalCopies { get; set; }
-
-    public string? CoverColor { get; set; }
 }
