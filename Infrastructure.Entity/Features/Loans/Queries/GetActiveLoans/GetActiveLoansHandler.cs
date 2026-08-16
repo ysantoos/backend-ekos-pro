@@ -42,7 +42,8 @@ public class GetActiveLoansHandler : IRequestHandler<GetActiveLoansQuery, LoanPa
                 BookId = l.BookId,
                 FullName = l.FullName,
                 LoanDate = l.LoanDate,
-                ReturnDate = l.ReturnDate
+                ReturnDate = l.ReturnDate,
+                IsReturned = l.IsReturned
             })
             .ToListAsync(cancellationToken);
 

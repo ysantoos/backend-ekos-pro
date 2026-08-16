@@ -15,4 +15,6 @@ public class LoanDto
     public DateTime? LoanDate { get; set; }
 
     public DateTime? ReturnDate { get; set; }
+
+    public bool IsReturned { get; set; }
 }

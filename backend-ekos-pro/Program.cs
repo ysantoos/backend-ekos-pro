@@ -9,10 +9,10 @@ builder.Services.AddControllers();
 // Configure CORS for front-end requests (adjust origins as needed)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
+    options.AddPolicy("DefaultCorsPolicy", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173", "http://localhost:4200") // front-end origins
+            .WithOrigins("http://localhost:5173") // front-end origin
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -48,7 +48,7 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseHttpsRedirection();
 
 // Enable CORS using the configured policy
-app.UseCors("AllowFrontend");
+app.UseCors("DefaultCorsPolicy");
 
 app.UseAuthorization();
 
