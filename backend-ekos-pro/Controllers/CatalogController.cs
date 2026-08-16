@@ -63,4 +63,46 @@ public class CatalogController : ControllerBase
             return BadRequest(ApiResponse<object>.FailureResponse(ex.Message));
         }
     }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] Domain.Service.Features.Catalog.Commands.CreateCatalogBook.CreateCatalogBookCommand command)
+    {
+        _logger.LogInformation("Create catalog book called with isbn={isbn}", command.Isbn);
+
+        try
+        {
+            var result = await _mediator.Send(command);
+            return CreatedAtAction(nameof(Get), new { }, ApiResponse< CatalogBookDto>.SuccessResponse(result, "Book created successfully"));
+        }
+        catch (Domain.Service.Exceptions.BusinessException ex)
+        {
+            _logger.LogWarning(ex, "Business rule prevented creation for isbn={isbn}", command.Isbn);
+            return BadRequest(ApiResponse<object>.FailureResponse(ex.Message));
+        }
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] Domain.Service.Features.Catalog.Commands.UpdateCatalogBook.UpdateCatalogBookCommand command)
+    {
+        _logger.LogInformation("Update catalog book called id={id} isbn={isbn}", id, command.Isbn);
+
+        if (id != command.Id)
+            return BadRequest(ApiResponse<object>.FailureResponse("Id in route does not match id in body"));
+
+        try
+        {
+            var result = await _mediator.Send(command);
+            return Ok(ApiResponse<CatalogBookDto>.SuccessResponse(result, "Book updated successfully"));
+        }
+        catch (Domain.Service.Exceptions.NotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Book not found: {id}", id);
+            return NotFound(ApiResponse<object>.FailureResponse(ex.Message));
+        }
+        catch (Domain.Service.Exceptions.BusinessException ex)
+        {
+            _logger.LogWarning(ex, "Business rule prevented update for book {id}", id);
+            return BadRequest(ApiResponse<object>.FailureResponse(ex.Message));
+        }
+    }
 }
