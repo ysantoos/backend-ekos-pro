@@ -57,6 +57,11 @@ public class CatalogBookConfiguration : BaseEntityConfiguration<Entities.Catalog
             .IsRequired(false)
             .HasComment("Year of publication");
 
+        builder.Property(b => b.TotalCopies)
+            .IsRequired()
+            .HasDefaultValue(0)
+            .HasComment("Total number of copies");
+
         // Optional string properties
         builder.Property(b => b.CoverColor)
             .HasMaxLength(DatabaseConstants.CodeLength)
