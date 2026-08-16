@@ -3,12 +3,23 @@ using Domain.Service;
 using Infrastructure.Entity;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
-using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllers();
+// Configure CORS for front-end requests (adjust origins as needed)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DefaultCorsPolicy", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173") // front-end origin
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
 
 // Add Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
@@ -72,6 +83,9 @@ app.UseSwaggerUI(options =>
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseHttpsRedirection();
+
+// Enable CORS using the configured policy
+app.UseCors("DefaultCorsPolicy");
 
 app.UseAuthorization();
 
