@@ -1,6 +1,9 @@
 using backend_ekos_pro.Middleware;
 using Domain.Service;
 using Infrastructure.Entity;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +12,40 @@ builder.Services.AddControllers();
 
 // Add Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Ekos Pro API",
+        Version = "v1",
+        Description = "API documentation for Ekos Pro"
+    });
+
+    // Include XML comments from this assembly and referenced projects (if available)
+    var basePath = AppContext.BaseDirectory;
+    var assemblies = new[]
+    {
+        Assembly.GetExecutingAssembly().GetName().Name,
+        "Domain.Service",
+        "Infrastructure.Entity"
+    };
+
+    foreach (var asmName in assemblies)
+    {
+        try
+        {
+            var xmlFile = Path.Combine(basePath, asmName + ".xml");
+            if (File.Exists(xmlFile))
+            {
+                options.IncludeXmlComments(xmlFile);
+            }
+        }
+        catch
+        {
+            // Ignore missing XML files
+        }
+    }
+});
 
 // Add Infrastructure and Domain layers
 builder.Services.AddInfrastructureEntity(builder.Configuration);
@@ -23,15 +59,14 @@ builder.Logging.AddDebug();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Ekos Pro API v1");
-        options.RoutePrefix = string.Empty; // Swagger UI at app's root
-    });
-}
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Ekos Pro API v1");
+    options.RoutePrefix = string.Empty; // Swagger UI at app's root
+    options.DocumentTitle = "Ekos Pro API Docs";
+    options.DefaultModelsExpandDepth(-1); // hide schema definitions by default
+});
 
 // Global exception handling middleware (must be first)
 app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -39,10 +74,6 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
 
 app.MapControllers();
 
