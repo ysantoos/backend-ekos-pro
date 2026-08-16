@@ -1,4 +1,5 @@
 using Infrastructure.Entity.Data;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,6 +46,12 @@ public static class DependencyInjection
 
         // Register repositories here when needed
         // services.AddScoped<IBookRepository, BookRepository>();
+
+        // Register MediatR handlers from this assembly so handlers placed in Infrastructure are discovered
+        services.AddMediatR(configuration =>
+        {
+            configuration.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
+        });
 
         return services;
     }

@@ -15,6 +15,7 @@ public class ApplicationDbContext : DbContext
     {
     }
     public DbSet<Entities.CatalogBook> CatalogBooks => Set<Entities.CatalogBook>();
+    public DbSet<Entities.LoanHistoryEntry> LoanHistoryEntries => Set<Entities.LoanHistoryEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

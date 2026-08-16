@@ -2,9 +2,6 @@
   <Folder Name="/application/">
     <Project Path="backend-ekos-pro/backend-ekos-pro.csproj" />
   </Folder>
-  <Folder Name="/Constitution/">
-    <File Path="copilot-instructions.md" />
-  </Folder>
   <Folder Name="/Domain/">
     <Project Path="Domain.Service/Domain.Service.csproj" />
   </Folder>
@@ -13,5 +10,8 @@
   </Folder>
   <Folder Name="/Utils/">
     <Project Path="Utils/Utils.csproj" />
+  </Folder>
+  <Folder Name="/Utils/Constitution/">
+    <File Path="copilot-instructions.md" />
   </Folder>
 </Solution>

@@ -4,6 +4,7 @@ using Infrastructure.Entity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Entity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260815233936_AddLoanHistoryEntry")]
+    partial class AddLoanHistoryEntry
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,12 +83,6 @@ namespace Infrastructure.Entity.Migrations
                         .HasColumnType("nvarchar(500)")
                         .HasComment("Book title");
 
-                    b.Property<int>("TotalCopies")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasComment("Total number of copies");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -144,17 +141,6 @@ namespace Infrastructure.Entity.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("Email")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasComment("Email of the user who borrowed the book");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasComment("Full name of the user who borrowed the book");
-
                     b.Property<bool>("IsReturned")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -164,11 +150,6 @@ namespace Infrastructure.Entity.Migrations
                     b.Property<DateTime?>("LoanDate")
                         .HasColumnType("datetime2")
                         .HasComment("Date when the book was loaned");
-
-                    b.Property<string>("MobilePhone")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasComment("Mobile phone number of the user who borrowed the book");
 
                     b.Property<DateTime?>("ReturnDate")
                         .HasColumnType("datetime2")
@@ -181,6 +162,12 @@ namespace Infrastructure.Entity.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasComment("Name of the user who borrowed the book");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BookId")
@@ -189,11 +176,11 @@ namespace Infrastructure.Entity.Migrations
                     b.HasIndex("CreatedAt")
                         .HasDatabaseName("IX_LoanHistoryEntry_CreatedAt");
 
-                    b.HasIndex("FullName")
-                        .HasDatabaseName("IX_LoanHistory_FullName");
-
                     b.HasIndex("LoanDate")
                         .HasDatabaseName("IX_LoanHistory_LoanDate");
+
+                    b.HasIndex("UserName")
+                        .HasDatabaseName("IX_LoanHistory_UserName");
 
                     b.ToTable("LoanHistoryEntries", null, t =>
                         {

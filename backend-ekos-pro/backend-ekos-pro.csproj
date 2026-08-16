@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>backend_ekos_pro</RootNamespace>
-    <UserSecretsId>6064e52e-ed73-4119-b374-fb3478f0385f</UserSecretsId>
+    <!-- UserSecrets disabled: project will use appsettings.json for configuration -->
   </PropertyGroup>
 
   <ItemGroup>
