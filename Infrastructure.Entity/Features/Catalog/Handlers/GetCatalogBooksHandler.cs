@@ -19,6 +19,9 @@ public class GetCatalogBooksHandler : IRequestHandler<GetCatalogBooksQuery, Cata
     {
         var query = _db.CatalogBooks.AsNoTracking().AsQueryable();
 
+        // Exclude soft-deleted books explicitly (defensive: also enforced by global filter)
+        query = query.Where(b => !b.IsDeleted);
+
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
             var s = request.Search.Trim();
