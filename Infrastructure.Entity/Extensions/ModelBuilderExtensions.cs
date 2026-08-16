@@ -28,8 +28,21 @@ public static class ModelBuilderExtensions
                         .Property(property.Name)
                         .HasColumnType("datetime2");
                 }
+
+                // Apply global query filter to exclude soft-deleted entities by default
+                var method = typeof(ModelBuilderExtensions)
+                    .GetMethod(nameof(ApplySoftDeleteFilter), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+                    ?.MakeGenericMethod(entityType.ClrType);
+
+                method?.Invoke(null, new object[] { modelBuilder });
             }
         }
+    }
+
+    private static void ApplySoftDeleteFilter<TEntity>(ModelBuilder modelBuilder)
+        where TEntity : BaseEntity
+    {
+        modelBuilder.Entity<TEntity>().HasQueryFilter(e => !e.IsDeleted);
     }
 
     /// <summary>

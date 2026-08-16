@@ -39,4 +39,28 @@ public class CatalogController : ControllerBase
         var response = ApiResponse<CatalogPageResponseDto>.SuccessResponse(result);
         return Ok(response);
     }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
+    {
+        _logger.LogInformation("Delete catalog book called with id={id}", id);
+
+        try
+        {
+            var cmd = new Domain.Service.Features.Catalog.Commands.DeleteCatalogBook.DeleteCatalogBookCommand { Id = id };
+            await _mediator.Send(cmd);
+            var resp = ApiResponse<object>.SuccessResponse(null, "Book deleted successfully");
+            return Ok(resp);
+        }
+        catch (Domain.Service.Exceptions.NotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Book not found: {id}", id);
+            return NotFound(ApiResponse<object>.FailureResponse(ex.Message));
+        }
+        catch (Domain.Service.Exceptions.BusinessException ex)
+        {
+            _logger.LogWarning(ex, "Business rule prevented deletion for book {id}", id);
+            return BadRequest(ApiResponse<object>.FailureResponse(ex.Message));
+        }
+    }
 }

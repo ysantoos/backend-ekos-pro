@@ -37,8 +37,28 @@ public abstract class BaseEntityConfiguration<TEntity> : IEntityTypeConfiguratio
             .HasMaxLength(256)
             .IsRequired(false);
 
+        // Soft-delete configuration
+        builder.Property(e => e.IsDeleted)
+            .IsRequired()
+            .HasDefaultValue(false)
+            .HasComment("Indicates whether the entity has been soft-deleted");
+
+        builder.Property(e => e.DeletedAt)
+            .IsRequired(false)
+            .HasColumnType("datetime2")
+            .HasComment("Timestamp when the entity was soft-deleted");
+
+        builder.Property(e => e.DeletedBy)
+            .HasMaxLength(256)
+            .IsRequired(false)
+            .HasComment("User who soft-deleted the entity");
+
         // Index for performance on common queries
         builder.HasIndex(e => e.CreatedAt)
             .HasDatabaseName($"IX_{typeof(TEntity).Name}_CreatedAt");
+
+        // Index to speed up queries filtering out deleted rows
+        builder.HasIndex(e => e.IsDeleted)
+            .HasDatabaseName($"IX_{typeof(TEntity).Name}_IsDeleted");
     }
 }
