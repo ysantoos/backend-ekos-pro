@@ -19,4 +19,8 @@
     <ProjectReference Include="..\Domain.Service\Domain.Service.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Prompts\" />
+  </ItemGroup>
+
 </Project>
