@@ -56,15 +56,29 @@ public class GetActiveLoansHandler : IRequestHandler<GetActiveLoansQuery, LoanPa
             .ToListAsync(cancellationToken);
 
         // Enrich with book title/author where possible
-        var bookIds = items.Select(i => i.BookId).Distinct().ToList();
-        var books = await _db.CatalogBooks
-            .AsNoTracking()
-            .Where(b => bookIds.Contains(b.Id.ToString()))
-            .ToDictionaryAsync(b => b.Id.ToString(), b => new { b.Title, b.Author }, cancellationToken);
+        // Parse stored BookId strings to GUIDs and query CatalogBooks by Guid to avoid string-formatting mismatches.
+        // Also ignore global query filters so we can show title/author even if the book was soft-deleted.
+        var bookIds = items
+            .Select(i => i.BookId)
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Distinct()
+            .Select(id => Guid.TryParse(id, out var g) ? g : Guid.Empty)
+            .Where(g => g != Guid.Empty)
+            .ToList();
+
+        var books = new Dictionary<Guid, (string Title, string Author)>();
+        if (bookIds.Count > 0)
+        {
+            books = await _db.CatalogBooks
+                .AsNoTracking()
+                .IgnoreQueryFilters()
+                .Where(b => bookIds.Contains(b.Id))
+                .ToDictionaryAsync(b => b.Id, b => (b.Title, b.Author), cancellationToken);
+        }
 
         foreach (var it in items)
         {
-            if (books.TryGetValue(it.BookId, out var info))
+            if (Guid.TryParse(it.BookId, out var gid) && books.TryGetValue(gid, out var info))
             {
                 it.BookTitle = info.Title;
                 it.BookAuthor = info.Author;
