@@ -18,6 +18,28 @@ public class BooksController : ControllerBase
         _logger = logger;
     }
 
+    [HttpPost("synopsis")]
+    public async Task<IActionResult> GenerateSynopsis([FromBody] Domain.Service.Features.Books.Commands.GenerateSynopsis.GenerateSynopsisCommand command)
+    {
+        _logger.LogInformation("Generate synopsis called for title={title} author={author}", command.Title, command.Author);
+
+        try
+        {
+            var result = await _mediator.Send(command);
+            return Ok(ApiResponse<string>.SuccessResponse(result, "Synopsis generated."));
+        }
+        catch (Domain.Service.Exceptions.ValidationException ex)
+        {
+            _logger.LogWarning(ex, "Validation error generating synopsis for title={title}", command.Title);
+            return BadRequest(ApiResponse<object>.FailureResponse(ex.Message));
+        }
+        catch (Domain.Service.Exceptions.BusinessException ex)
+        {
+            _logger.LogWarning(ex, "Business error generating synopsis for title={title}", command.Title);
+            return StatusCode(502, ApiResponse<object>.FailureResponse(ex.Message));
+        }
+    }
+
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] string? search, [FromQuery] string? category, [FromQuery] string? author, [FromQuery] int? publicationYear, [FromQuery] string? availability, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {

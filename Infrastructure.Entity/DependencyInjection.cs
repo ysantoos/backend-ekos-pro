@@ -1,8 +1,14 @@
 using Infrastructure.Entity.Data;
+using Infrastructure.Entity.Options;
+using Infrastructure.Entity.Services;
+using Domain.Service.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
+using System.Net.Http;
 
 namespace Infrastructure.Entity;
 
@@ -46,6 +52,26 @@ public static class DependencyInjection
 
         // Register repositories here when needed
         // services.AddScoped<IBookRepository, BookRepository>();
+
+        // Bind Gemini options (stored under section "Gemini" in appsettings)
+        var geminiOptions = configuration.GetSection("Gemini").Get<GeminiOptions>() ?? new GeminiOptions();
+        services.AddSingleton(geminiOptions);
+
+        // Register a simple HttpClient-backed GeminiTextGenerationService.
+        // We create a dedicated HttpClient per service instance to avoid requiring IHttpClientFactory in this project.
+        services.AddScoped<ITextGenerationService>(sp =>
+        {
+            var opts = sp.GetRequiredService<GeminiOptions>();
+            var client = new HttpClient
+            {
+                BaseAddress = new Uri(opts.BaseUrl),
+                Timeout = TimeSpan.FromSeconds(opts.TimeoutSeconds)
+            };
+            if (!string.IsNullOrWhiteSpace(opts.ApiKey))
+                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", opts.ApiKey);
+
+            return new GeminiTextGenerationService(client, Microsoft.Extensions.Options.Options.Create(opts));
+        });
 
         // Register MediatR handlers from this assembly so handlers placed in Infrastructure are discovered
         services.AddMediatR(configuration =>

@@ -13,14 +13,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.11" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Domain.Service\Domain.Service.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Prompts\" />
   </ItemGroup>
 
 </Project>

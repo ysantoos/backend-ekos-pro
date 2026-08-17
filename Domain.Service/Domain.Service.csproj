@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <Folder Include="Features\Catalog\Handlers\" />
-    <Folder Include="Interfaces\" />
   </ItemGroup>
 
 </Project>
