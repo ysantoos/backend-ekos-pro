@@ -18,6 +18,30 @@ public class LoansController : ControllerBase
         _logger = logger;
     }
 
+    [HttpPost("{id:guid}/return")]
+    public async Task<IActionResult> Return([FromRoute] Guid id)
+    {
+        _logger.LogInformation("Return loan called for id={id}", id);
+
+        try
+        {
+            var cmd = new Domain.Service.Features.Loans.Commands.ReturnLoan.ReturnLoanCommand { Id = id };
+            await _mediator.Send(cmd);
+            return Ok(ApiResponse<object>.SuccessResponse(null, "Book returned successfully."));
+        }
+        catch (Domain.Service.Exceptions.NotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Loan not found: {id}", id);
+            return NotFound(ApiResponse<object>.FailureResponse(ex.Message));
+        }
+        catch (Domain.Service.Exceptions.BusinessException ex)
+        {
+            _logger.LogWarning(ex, "Business error returning loan: {id}", id);
+            // For already returned, respond 409 Conflict with message
+            return Conflict(ApiResponse<object>.FailureResponse(ex.Message));
+        }
+    }
+
     [HttpGet("active")]
     public async Task<IActionResult> GetActive([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
